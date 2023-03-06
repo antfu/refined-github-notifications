@@ -185,7 +185,9 @@
     }
   }
 
-  run()
+  setTimeout(() => {
+    run()
+  }, 500)
 
   // listen to github page loaded event
   document.addEventListener('pjax:end', () => run())

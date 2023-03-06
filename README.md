@@ -1,10 +1,10 @@
-# Refined Github Notifications
+# Refined GitHub Notifications
 
-This is a browser UserScript that enhances the GitHub Notifications (https://github.com/notifications) page.
-
-> **Note**: It's opinionated to my own workflow.
+A browser UserScript that enhances the GitHub Notifications page.
 
 ## Features
+
+> **Note**: It's opinionated to my own workflow.
 
 - Add `target="_blank"` to all notifications
 - Refresh the page when going back to the tab after 1 min idle, so you got the latest notifications

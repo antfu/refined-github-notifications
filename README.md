@@ -8,7 +8,6 @@ A browser UserScript that enhances the GitHub Notifications page.
 
 - Add `target="_blank"` to all notifications (and remove `notification_referrer_id`)
 - Refresh the page when going back to the tab after 1 min idle, so you got the latest notifications
-- Refresh the page after clicking `Mark as done` button (in group by repo mode)
 - Remove bot avatars
 - Colorize the notification type (mention, review request, etc.)
 - Auto mark notifications as done (remove it from the list), if:

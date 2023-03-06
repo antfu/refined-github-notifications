@@ -72,7 +72,7 @@
     // Auto refresh page on idle
     document.addEventListener('focus', () => {
       if (Date.now() - lastUpdate > TIMEOUT)
-        refresh()
+        setTimeout(() => refresh(), 100)
       lastUpdate = Date.now()
     })
   }
@@ -156,16 +156,6 @@
       setTimeout(() => refresh(), 200)
   }
 
-  // Refresh page after clicking "mark as done"
-  function markDoneRefresh() {
-    document.querySelectorAll('form.js-grouped-notifications-mark-all-read-button')
-      .forEach((r) => {
-        r.addEventListener('submit', () => {
-          setTimeout(() => refresh(), 1000)
-        })
-      })
-  }
-
   function removeBotAvatars() {
     document.querySelectorAll('.AvatarStack-body > a')
       .forEach((r) => {
@@ -176,7 +166,7 @@
 
   // Click the notification tab to do soft refresh
   function refresh() {
-    document.querySelector('a[href="/notifications"]').click()
+    document.querySelector('.filter-list a[href="/notifications"]').click()
     lastUpdate = Date.now()
   }
 
@@ -197,14 +187,11 @@
       dedupeTab()
       externalize()
       removeBotAvatars()
-      markDoneRefresh()
       autoMarkDone()
     }
   }
 
-  setTimeout(() => {
-    run()
-  }, 500)
+  run()
 
   // listen to github page loaded event
   document.addEventListener('pjax:end', () => run())

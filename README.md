@@ -15,6 +15,7 @@ A browser UserScript that enhances the GitHub Notifications page.
   - The issue/PR is closed/merged, you are not participating at all
   - The issue/PR is closed/merged, and you already read it
   - PRs created by Renovate, if not participating
+  - New commits pushed to PRs
   - *Notifications you have bookmarked will be bypassed
 - Make sure only one notification tab is opened
 

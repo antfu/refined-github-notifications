@@ -134,12 +134,19 @@
       }
 
       // Renovate bot
-      if (i.title.startsWith('chore(deps): update ') && (i.read || i.type === 'subscribed')) {
+      else if (i.title.startsWith('chore(deps): update ') && (i.read || i.type === 'subscribed')) {
+        count += 1
+        i.markDone()
+      }
+
+      // New commit pushed to PR
+      else if (i.url.match('/pull/[0-9]+/files/')) {
         count += 1
         i.markDone()
       }
     })
 
+    // Refresh page after marking done (expand the pagination)
     if (count >= 5)
       refresh()
   }

@@ -14,6 +14,10 @@
 (function () {
   'use strict'
 
+  // Fix the archive link
+  if (location.pathname === '/notifications/beta/archive')
+    location.pathname = '/notifications'
+
   const TIMEOUT = 60_000
   const NAME = 'Refined GitHub Notifications'
   let lastUpdate = Date.now()
@@ -28,19 +32,20 @@
     bc.onmessage = ({ data }) => {
       console.log(`[${NAME}]`, 'Received message', data)
       if (data.type === 'check-dedupe') {
+        // If the new tab is opened after the current tab, close the current tab
         if (data.time > bcInitTime) {
+          // TODO: close the tab
           try {
             window.close()
           }
-          catch (e) {
-          }
+          catch (e) {}
           location.href = 'about:blank'
         }
       }
     }
   }
 
-  function checkDedupe() {
+  function dedupeTab() {
     if (!bc)
       return
     bc.postMessage({ type: 'check-dedupe', time: bcInitTime, url: location.href })
@@ -148,7 +153,7 @@
 
     // Refresh page after marking done (expand the pagination)
     if (count >= 5)
-      refresh()
+      setTimeout(() => refresh(), 200)
   }
 
   // Refresh page after clicking "mark as done"
@@ -156,7 +161,7 @@
     document.querySelectorAll('form.js-grouped-notifications-mark-all-read-button')
       .forEach((r) => {
         r.addEventListener('submit', () => {
-          setTimeout(() => refresh(), 10)
+          setTimeout(() => refresh(), 1000)
         })
       })
   }
@@ -189,11 +194,11 @@
       }
 
       // Run every render
+      dedupeTab()
       externalize()
-      autoMarkDone()
-      markDoneRefresh()
       removeBotAvatars()
-      checkDedupe()
+      markDoneRefresh()
+      autoMarkDone()
     }
   }
 

@@ -82,13 +82,24 @@
                 ? 'muted'
                 : 'unknown'
 
+        const notificationTypeEl = el.querySelector('.AvatarStack').nextElementSibling
+        const notificationType = notificationTypeEl.textContent.trim()
+
+        // Colorize notification type
+        if (notificationType === 'mention')
+          notificationTypeEl.classList.add('color-fg-open')
+        else if (notificationType === 'subscribed')
+          notificationTypeEl.classList.add('color-fg-muted')
+        else if (notificationType === 'review requested')
+          notificationTypeEl.classList.add('color-fg-done')
+
         const item = {
           title: el.querySelector('.markdown-title').textContent.trim(),
           el,
           url,
           read: el.classList.contains('notification-read'),
           starred: el.classList.contains('notification-starred'),
-          type: el.querySelector('.AvatarStack').nextElementSibling.textContent.trim(),
+          type: notificationType,
           status,
           isClosed: ['closed', 'done', 'muted'].includes(status),
           markDone: () => {

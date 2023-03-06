@@ -16,6 +16,7 @@
 
   const TIMEOUT = 60_000
   const NAME = 'Refined GitHub Notifications'
+  let lastUpdate = Date.now()
 
   let bc
   let bcInitTime = 0
@@ -51,20 +52,23 @@
         if (r.href.startsWith('https://github.com/notifications'))
           return
         r.target = '_blank'
+        r.rel = 'noopener noreferrer'
+        const url = new URL(r.href)
+
+        // Remove notification_referrer_id
+        if (url.searchParams.get('notification_referrer_id')) {
+          url.searchParams.delete('notification_referrer_id')
+          r.href = url.toString()
+        }
       })
   }
 
   function initIdleListener() {
-    let last = 0
     // Auto refresh page on idle
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        last = Date.now()
-      }
-      else {
-        if (Date.now() - last > TIMEOUT)
-          refresh()
-      }
+    document.addEventListener('focus', () => {
+      if (Date.now() - lastUpdate > TIMEOUT)
+        refresh()
+      lastUpdate = Date.now()
     })
   }
 
@@ -161,6 +165,7 @@
   // Click the notification tab to do soft refresh
   function refresh() {
     document.querySelector('a[href="/notifications"]').click()
+    lastUpdate = Date.now()
   }
 
   ////////////////////////////////////////

@@ -1,9 +1,12 @@
 // ==UserScript==
 // @name         Refined GitHub Notifications
-// @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  Make GitHub Notifications Better
-// @author       Anthony Fu
+// @namespace    https://greasyfork.org/en/scripts/461320-refined-github-notifications
+// @version      0.0.0
+// @description  Enhances the GitHub Notifications page, making it more productive and less noisy.
+// @author       Anthony Fu (https://github.com/antfu)
+// @license      MIT
+// @homepageURL  https://github.com/antfu/refined-github-notifications
+// @supportURL   https://github.com/antfu/refined-github-notifications
 // @match        https://github.com/**
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=github.com
 // @grant        none

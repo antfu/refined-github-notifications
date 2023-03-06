@@ -15,7 +15,7 @@
   "bugs": "https://github.com/antfu/refined-github-notifications/issues",
   "scripts": {
     "lint": "eslint .",
-    "release": "bumpp"
+    "release": "bumpp && node bump.js"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.35.3",

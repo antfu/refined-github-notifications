@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Refined GitHub Notifications
 // @namespace    https://greasyfork.org/en/scripts/461320-refined-github-notifications
-// @version      0.1.1
+// @version      0.1.2
 // @description  Enhances the GitHub Notifications page, making it more productive and less noisy.
 // @author       Anthony Fu (https://github.com/antfu)
 // @license      MIT
@@ -81,8 +81,9 @@
   }
 
   function getIssues() {
-    return [...document.querySelectorAll('.notifications-list-item')]
-      .map((el) => {
+    return Array.prototype.map.call(
+      document.querySelectorAll('.notifications-list-item'),
+      (el) => {
         const url = el.querySelector('a.notification-list-item-link').href
         const status = el.querySelector('.color-fg-open')
           ? 'open'
@@ -121,7 +122,8 @@
         }
 
         return item
-      })
+      },
+    )
   }
 
   function autoMarkDone() {

@@ -124,35 +124,47 @@
       })
   }
 
+  function getReasonMarkedDone(item) {
+    if (item.isClosed && (item.read || item.type === 'subscribed'))
+      return 'Closed / merged'
+
+    if (item.title.startsWith('chore(deps): update ') && (item.read || item.type === 'subscribed'))
+      return 'Renovate bot'
+
+    if (item.url.match('/pull/[0-9]+/files/'))
+      return 'New commit pushed to PR'
+  }
+
   function autoMarkDone() {
     const items = getIssues()
 
     console.log(items)
     let count = 0
 
+    const done = []
+
     items.forEach((i) => {
       // skip bookmarked notifications
       if (i.starred)
         return
 
-      // mark done for closed/merged notifications, either read or not been mentioned
-      if (i.isClosed && (i.read || i.type === 'subscribed')) {
-        count += 1
-        i.markDone()
-      }
+      const reason = getReasonMarkedDone(i)
+      if (!reason)
+        return
 
-      // Renovate bot
-      else if (i.title.startsWith('chore(deps): update ') && (i.read || i.type === 'subscribed')) {
-        count += 1
-        i.markDone()
-      }
-
-      // New commit pushed to PR
-      else if (i.url.match('/pull/[0-9]+/files/')) {
-        count += 1
-        i.markDone()
-      }
+      count++
+      i.markDone()
+      done.push({
+        title: i.title,
+        reason,
+        link: i.link,
+      })
     })
+
+    if (done.length) {
+      console.log(`[${NAME}]`, `${count} notifications marked done`)
+      console.table(done)
+    }
 
     // Refresh page after marking done (expand the pagination)
     if (count >= 5)

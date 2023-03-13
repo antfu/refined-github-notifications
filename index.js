@@ -138,6 +138,14 @@
         return 'GH PR Audit Action workflow run cancelled, probably due to another run taking precedence'
   }
 
+  function isInboxView() {
+      const query = new URLSearchParams(window.location.search).get('query')
+      if (!query) return true
+
+      const conditions = query.split(' ')
+      return ['is:done', 'is:saved'].every((condition) => !conditions.includes(condition))
+  }
+
   function autoMarkDone() {
     const items = getIssues()
 
@@ -205,7 +213,7 @@
       dedupeTab()
       externalize()
       removeBotAvatars()
-      autoMarkDone()
+      if (isInboxView()) autoMarkDone()
     }
   }
 

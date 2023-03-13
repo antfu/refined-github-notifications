@@ -125,17 +125,14 @@
   }
 
   function getReasonMarkedDone(item) {
-    if (item.isClosed && (item.read || item.type === 'subscribed')) {
-        return 'closed/merged notifications, either read or not been mentioned'
-    }
+    if (item.isClosed && (item.read || item.type === 'subscribed'))
+      return 'Closed / merged'
 
-    if (item.title.startsWith('chore(deps): update ') && (item.read || item.type === 'subscribed')) {
-        return 'Renovate Bot'
-    }
+    if (item.title.startsWith('chore(deps): update ') && (item.read || item.type === 'subscribed'))
+      return 'Renovate bot'
 
-    if (item.url.match('/pull/[0-9]+/files/')) {
-        return 'New commit pushed to PR'
-    }
+    if (item.url.match('/pull/[0-9]+/files/'))
+      return 'New commit pushed to PR'
   }
 
   function autoMarkDone() {
@@ -144,20 +141,30 @@
     console.log(items)
     let count = 0
 
+    const done = []
+
     items.forEach((i) => {
       // skip bookmarked notifications
       if (i.starred)
         return
 
       const reason = getReasonMarkedDone(i)
-      if (!reason) return
+      if (!reason)
+        return
 
       count++
       i.markDone()
-      console.log(`marking notification done:
-notification: ${i.title}
-reason: ${reason}`)
+      done.push({
+        title: i.title,
+        reason,
+        link: i.link,
+      })
     })
+
+    if (done.length) {
+      console.log(`[${NAME}]`, `${count} notifications marked done`)
+      console.table(done)
+    }
 
     // Refresh page after marking done (expand the pagination)
     if (count >= 5)

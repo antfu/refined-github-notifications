@@ -155,8 +155,8 @@
       count++
       i.markDone()
       console.log(`marking notification done:
-      notification: ${i.title}
-      reason: ${reason}`)
+notification: ${i.title}
+reason: ${reason}`)
     })
 
     // Refresh page after marking done (expand the pagination)

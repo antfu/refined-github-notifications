@@ -133,6 +133,9 @@
 
     if (item.url.match('/pull/[0-9]+/files/'))
       return 'New commit pushed to PR'
+
+    if (item.type === 'ci activity' && /workflow run cancell?ed/.test(item.title))
+        return 'GH PR Audit Action workflow run cancelled, probably due to another run taking precedence'
   }
 
   function autoMarkDone() {

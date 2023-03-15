@@ -135,10 +135,23 @@
       return 'New commit pushed to PR'
 
     if (item.type === 'ci activity' && /workflow run cancell?ed/.test(item.title))
-        return 'GH PR Audit Action workflow run cancelled, probably due to another run taking precedence'
+      return 'GH PR Audit Action workflow run cancelled, probably due to another run taking precedence'
+  }
+
+  function isInboxView() {
+    const query = new URLSearchParams(window.location.search).get('query')
+    if (!query)
+      return true
+
+    const conditions = query.split(' ')
+    return ['is:done', 'is:saved'].every(condition => !conditions.includes(condition))
   }
 
   function autoMarkDone() {
+    // Only mark on "Inbox" view
+    if (!isInboxView())
+      return
+
     const items = getIssues()
 
     console.log(items)

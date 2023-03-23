@@ -28,6 +28,17 @@
   let bc
   let bcInitTime = 0
 
+  function injectStyle() {
+    const style = document.createElement('style')
+    style.innerHTML = `
+/* Hide blue dot on notification icon */
+.mail-status.unread {
+  display: none !important;
+}
+    `
+    document.head.appendChild(style)
+  }
+
   function initBroadcastChannel() {
     bcInitTime = Date.now()
     bc = new BroadcastChannel('refined-github-notifications')
@@ -195,10 +206,23 @@
       })
   }
 
+  /**
+   * The "x new notifications" badge
+   */
+  function hasNewNotifications() {
+    return !!document.querySelector('.js-updatable-content a[href="/notifications?query="]')
+  }
+
   // Click the notification tab to do soft refresh
   function refresh() {
+    if (!isInNotificationPage())
+      return
     document.querySelector('.filter-list a[href="/notifications"]').click()
     lastUpdate = Date.now()
+  }
+
+  function isInNotificationPage() {
+    return location.href.startsWith('https://github.com/notifications')
   }
 
   ////////////////////////////////////////
@@ -206,12 +230,17 @@
   let initialized = false
 
   function run() {
-    if (location.href.startsWith('https://github.com/notifications')) {
+    if (isInNotificationPage()) {
       // Run only once
       if (!initialized) {
         initIdleListener()
         initBroadcastChannel()
         initialized = true
+
+        setInterval(() => {
+          if (hasNewNotifications())
+            refresh()
+        }, 2000)
       }
 
       // Run every render
@@ -222,6 +251,7 @@
     }
   }
 
+  injectStyle()
   run()
 
   // listen to github page loaded event

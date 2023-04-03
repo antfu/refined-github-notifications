@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    html {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      html {
+        color: white;
+        color-scheme: dark;
+        background: #0d1117;
+      }
+    }
+    .main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div class="main">
+    This page should be closed automatically. If it doesn't, click anywhere to close it.
+  </div>
+  <script>
+    // this page is deployed on https://close-me.netlify.app
+    window.addEventListener('DOMContentLoaded', close)
+    window.addEventListener('keydown', close)
+    window.addEventListener('click', close)
+    window.addEventListener('visibilitychange', close)
+  </script>
+</body>
+</html>

@@ -120,14 +120,8 @@
       console.log(`[${NAME}]`, 'Received message', data)
       if (data.type === 'check-dedupe') {
         // If the new tab is opened after the current tab, close the current tab
-        if (data.time > bcInitTime) {
-          // TODO: close the tab
-          try {
-            window.close()
-          }
-          catch (e) {}
-          location.href = 'about:blank'
-        }
+        if (data.time > bcInitTime)
+          location.href = 'https://close-me.netlify.app'
       }
     }
   }

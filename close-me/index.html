@@ -20,17 +20,24 @@
       height: 100vh;
     }
   </style>
+  <title> </title>
 </head>
 <body>
   <div class="main">
     This page should be closed automatically. If it doesn't, click anywhere to close it.
+    <button @click="closeIt">
+      Close
+    </button>
   </div>
   <script>
     // this page is deployed on https://close-me.netlify.app
-    window.addEventListener('DOMContentLoaded', close)
-    window.addEventListener('keydown', close)
-    window.addEventListener('click', close)
-    window.addEventListener('visibilitychange', close)
+    const closeIt = () => {
+      window.close()
+    }
+    window.addEventListener('DOMContentLoaded', closeIt)
+    window.addEventListener('keydown', closeIt)
+    window.addEventListener('click', closeIt)
+    window.addEventListener('visibilitychange', closeIt)
   </script>
 </body>
 </html>

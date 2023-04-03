@@ -9,7 +9,7 @@
 // @supportURL   https://github.com/antfu/refined-github-notifications
 // @match        https://github.com/**
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=github.com
-// @grant        none
+// @grant        window.close
 // ==/UserScript==
 
 /* eslint-disable no-console */
@@ -21,9 +21,7 @@
   if (location.pathname === '/notifications/beta/archive')
     location.pathname = '/notifications'
 
-  const TIMEOUT = 60_000
   const NAME = 'Refined GitHub Notifications'
-  let lastUpdate = Date.now()
 
   let bc
   let bcInitTime = 0
@@ -120,8 +118,10 @@
       console.log(`[${NAME}]`, 'Received message', data)
       if (data.type === 'check-dedupe') {
         // If the new tab is opened after the current tab, close the current tab
-        if (data.time > bcInitTime)
+        if (data.time > bcInitTime) {
+          window.close()
           location.href = 'https://close-me.netlify.app'
+        }
       }
     }
   }

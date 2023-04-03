@@ -290,6 +290,21 @@
     return location.href.startsWith('https://github.com/notifications')
   }
 
+  function observeForNewNotifications() {
+    try {
+      const observer = new MutationObserver(() => {
+        if (hasNewNotifications())
+          refresh()
+      })
+      observer.observe(document.querySelector('.js-check-all-container').children[0], {
+        childList: true,
+        subtree: true,
+      })
+    }
+    catch (e) {
+    }
+  }
+
   ////////////////////////////////////////
 
   let initialized = false
@@ -300,12 +315,8 @@
       if (!initialized) {
         initIdleListener()
         initBroadcastChannel()
+        observeForNewNotifications()
         initialized = true
-
-        setInterval(() => {
-          if (hasNewNotifications())
-            refresh()
-        }, 2000)
       }
 
       // Run every render

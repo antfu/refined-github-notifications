@@ -9,7 +9,7 @@ Enhances the GitHub Notifications page, making it more productive and less noisy
 > **Note**: It's opinionated to my own workflow.
 
 - Add `target="_blank"` to all notifications (and remove `notification_referrer_id`)
-- Refresh the page when going back to the tab after 1 min idle, so you get the latest notifications
+- Refresh the page when going back to the tab, so you get the latest notifications
 - Remove bot avatars
 - Colorize the notification type (mention, review request, etc.)
 - Auto mark notifications as done (remove it from the list), if:
@@ -19,6 +19,7 @@ Enhances the GitHub Notifications page, making it more productive and less noisy
   - New commits pushed to PRs
   - *Notifications you have bookmarked will be bypassed
 - Make sure only one notification tab is opened
+- When going to the issue from the notification, inject a flating button to mark it as done and close the tab.
 
 ## Philosophy
 

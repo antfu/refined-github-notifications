@@ -35,8 +35,81 @@
 .mail-status.unread {
   display: none !important;
 }
+.js-notification-shelf {
+  display: none !important;
+}
     `
     document.head.appendChild(style)
+  }
+
+  /**
+   * To have a FAB button to close current issue,
+   * where you can mark done and then close the tab automatically
+   */
+  function notificationShelf() {
+    function inject() {
+      const shelf = document.querySelector('.js-notification-shelf')
+      if (!shelf)
+        return false
+
+      const containers = document.createElement('div')
+      Object.assign(containers.style, {
+        position: 'fixed',
+        right: '20px',
+        bottom: '20px',
+        zIndex: 999,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+      })
+      document.body.appendChild(containers)
+
+      const doneButton = shelf.querySelector('button[title="Done"]')
+      // const unsubscribeButton = shelf.querySelector('button[title="Unsubscribe"]')
+
+      const buttons = [
+        // unsubscribeButton,
+        doneButton,
+      ].filter(Boolean)
+
+      for (const button of buttons) {
+        const clickAndClose = async () => {
+          button.click()
+          await new Promise(resolve => setTimeout(resolve, 100))
+          window.close()
+        }
+
+        const fab = button.cloneNode(true)
+        fab.classList.remove('btn-sm')
+        fab.style.aspectRatio = '1/1'
+        fab.style.broderRadius = '100%'
+        fab.addEventListener('click', clickAndClose)
+        containers.appendChild(fab)
+
+        if (button === doneButton) {
+          document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'x') {
+              e.preventDefault()
+              clickAndClose()
+            }
+          })
+        }
+      }
+
+      return true
+    }
+
+    // when first into the page, the notification shelf might not be loaded, we need to wait for it to show
+    if (!inject()) {
+      const observer = new MutationObserver((mutationList) => {
+        const found = mutationList.some(i => i.type === 'childList' && Array.from(i.addedNodes).some(el => el.classList.contains('js-notification-shelf')))
+        if (found) {
+          inject()
+          observer.disconnect()
+        }
+      })
+      observer.observe(document.querySelector('[data-turbo-body]'), { childList: true })
+    }
   }
 
   function initBroadcastChannel() {
@@ -72,22 +145,14 @@
           return
         r.target = '_blank'
         r.rel = 'noopener noreferrer'
-        const url = new URL(r.href)
-
-        // Remove notification_referrer_id
-        if (url.searchParams.get('notification_referrer_id')) {
-          url.searchParams.delete('notification_referrer_id')
-          r.href = url.toString()
-        }
       })
   }
 
   function initIdleListener() {
-    // Auto refresh page on idle
-    document.addEventListener('focus', () => {
-      if (Date.now() - lastUpdate > TIMEOUT)
-        setTimeout(() => refresh(), 100)
-      lastUpdate = Date.now()
+    // Auto refresh page on going back to the page
+    document.addEventListener('visibilitychange', (e) => {
+      if (document.visibilityState === 'visible')
+        refresh()
     })
   }
 
@@ -165,7 +230,7 @@
 
     const items = getIssues()
 
-    console.log(items)
+    console.log(`[${NAME}] ${items}`)
     let count = 0
 
     const done = []
@@ -248,6 +313,9 @@
       externalize()
       removeBotAvatars()
       autoMarkDone()
+    }
+    else {
+      notificationShelf()
     }
   }
 

@@ -34,7 +34,7 @@
   display: none !important;
 }
 .js-notification-shelf {
-  display: none !important;
+  /* display: none !important; */
 }
 .btn-hover-primary {
   transform: scale(1.2);
@@ -83,7 +83,22 @@
       for (const button of buttons) {
         const clickAndClose = async () => {
           button.click()
-          await new Promise(resolve => setTimeout(resolve, 100))
+          // wait for the notification shelf to be updated
+          await new Promise((resolve) => {
+            new MutationObserver(() => {
+              resolve()
+            })
+              .observe(
+                shelf,
+                {
+                  childList: true,
+                  attributes: true,
+                  subtree: true,
+                  attributeFilter: ['data-redirect-to-inbox-on-submit'],
+                },
+              )
+          })
+          // close the tab
           window.close()
         }
 
@@ -288,7 +303,6 @@
     if (!isInNotificationPage())
       return
     document.querySelector('.filter-list a[href="/notifications"]').click()
-    lastUpdate = Date.now()
   }
 
   function isInNotificationPage() {

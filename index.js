@@ -25,9 +25,16 @@
   const cleanups = []
 
   const NAME = 'Refined GitHub Notifications'
+  const STORAGE_KEY = 'refined-github-notifications'
+
+  const config = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
 
   let bc
   let bcInitTime = 0
+
+  function writeConfig() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
+  }
 
   function injectStyle() {
     const style = document.createElement('style')
@@ -109,6 +116,84 @@
         aspectRatio: '1/1',
         borderRadius: '50%',
       })
+
+      const commentActions = document.querySelector('#partial-new-comment-form-actions')
+      if (commentActions) {
+        const key = 'markDoneAfterComment'
+        const label = document.createElement('label')
+        const input = document.createElement('input')
+        label.classList.add('color-fg-muted')
+        input.type = 'checkbox'
+        input.checked = !!config[key]
+        input.addEventListener('change', (e) => {
+          config[key] = !!e.target.checked
+          writeConfig()
+        })
+        label.appendChild(input)
+        label.appendChild(document.createTextNode(' Mark done and close after comment'))
+        Object.assign(label.style, {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'end',
+          gap: '5px',
+          userSelect: 'none',
+          fontWeight: '400',
+        })
+        const div = document.createElement('div')
+        Object.assign(div.style, {
+          paddingBottom: '5px',
+        })
+        div.appendChild(label)
+        commentActions.parentElement.prepend(div)
+
+        const commentButton = commentActions.querySelector('button.btn-primary[type="submit"]')
+        const closeButton = commentActions.querySelector('[name="comment_and_close"]')
+        const buttons = [commentButton, closeButton].filter(Boolean)
+
+        for (const button of buttons) {
+          button.addEventListener('click', async (e) => {
+            if (config[key]) {
+              await new Promise(resolve => setTimeout(resolve, 1000))
+              clickAndClose()
+            }
+          })
+        }
+      }
+
+      const mergeMessage = document.querySelector('.merge-message')
+      if (mergeMessage) {
+        const key = 'markDoneAfterMerge'
+        const label = document.createElement('label')
+        const input = document.createElement('input')
+        label.classList.add('color-fg-muted')
+        input.type = 'checkbox'
+        input.checked = !!config[key]
+        input.addEventListener('change', (e) => {
+          config[key] = !!e.target.checked
+          writeConfig()
+        })
+        label.appendChild(input)
+        label.appendChild(document.createTextNode(' Mark done and close after merge'))
+        Object.assign(label.style, {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'end',
+          gap: '5px',
+          userSelect: 'none',
+          fontWeight: '400',
+        })
+        mergeMessage.prepend(label)
+
+        const buttons = mergeMessage.querySelectorAll('.js-auto-merge-box button')
+        for (const button of buttons) {
+          button.addEventListener('click', async (e) => {
+            if (config[key]) {
+              await new Promise(resolve => setTimeout(resolve, 1000))
+              clickAndClose()
+            }
+          })
+        }
+      }
 
       document.body.appendChild(fab)
       document.addEventListener('keydown', keyDownHandle)

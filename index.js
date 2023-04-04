@@ -63,76 +63,59 @@
       if (!shelf)
         return false
 
-      const containers = document.createElement('div')
-      Object.assign(containers.style, {
+      const doneButton = shelf.querySelector('button[title="Done"]')
+      if (!doneButton)
+        return false
+
+      const clickAndClose = async () => {
+        doneButton.click()
+        // wait for the notification shelf to be updated
+        await Promise.race([
+          new Promise((resolve) => {
+            const ob = new MutationObserver((r) => {
+              resolve()
+              ob.disconnect()
+            })
+              .observe(
+                shelf,
+                {
+                  childList: true,
+                  subtree: true,
+                  attributes: true,
+                },
+              )
+          }),
+          new Promise(resolve => setTimeout(resolve, 1000)),
+        ])
+        // close the tab
+        window.close()
+      }
+      const keyDownHandle = (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'x') {
+          e.preventDefault()
+          clickAndClose()
+        }
+      }
+
+      const fab = doneButton.cloneNode(true)
+      fab.classList.remove('btn-sm')
+      fab.classList.add('btn-hover-primary')
+      fab.addEventListener('click', clickAndClose)
+      Object.assign(fab.style, {
         position: 'fixed',
         right: '25px',
         bottom: '25px',
         zIndex: 999,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '10px',
+        aspectRatio: '1/1',
+        borderRadius: '50%',
       })
 
-      document.body.appendChild(containers)
+      document.body.appendChild(fab)
+      document.addEventListener('keydown', keyDownHandle)
       cleanups.push(() => {
-        document.body.removeChild(containers)
+        document.body.removeChild(fab)
+        document.removeEventListener('keydown', keyDownHandle)
       })
-
-      const doneButton = shelf.querySelector('button[title="Done"]')
-      // const unsubscribeButton = shelf.querySelector('button[title="Unsubscribe"]')
-
-      const buttons = [
-        // unsubscribeButton,
-        doneButton,
-      ].filter(Boolean)
-
-      for (const button of buttons) {
-        const clickAndClose = async () => {
-          button.click()
-          // wait for the notification shelf to be updated
-          await Promise.race([
-            new Promise((resolve) => {
-              const ob = new MutationObserver((r) => {
-                resolve()
-                ob.disconnect()
-              })
-                .observe(
-                  shelf,
-                  {
-                    childList: true,
-                    subtree: true,
-                    attributes: true,
-                  },
-                )
-            }),
-            new Promise(resolve => setTimeout(resolve, 1000)),
-          ])
-          // close the tab
-          window.close()
-        }
-
-        const fab = button.cloneNode(true)
-        fab.classList.remove('btn-sm')
-        fab.classList.add('btn-hover-primary')
-        fab.style.aspectRatio = '1/1'
-        fab.style.borderRadius = '100%'
-        fab.addEventListener('click', clickAndClose)
-        containers.appendChild(fab)
-
-        if (button === doneButton) {
-          const handle = (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'x') {
-              e.preventDefault()
-              clickAndClose()
-            }
-          }
-          document.addEventListener('keydown', handle)
-          cleanups.push(() => {
-            document.removeEventListener('keydown', handle)
-          })
-        }
-      }
 
       return true
     }

@@ -36,6 +36,16 @@
 .js-notification-shelf {
   display: none !important;
 }
+.btn-hover-primary {
+  transform: scale(1.2);
+  transition: all .3s ease-in-out;
+}
+.btn-hover-primary:hover {
+  color: var(--color-btn-primary-text);
+  background-color: var(--color-btn-primary-bg);
+  border-color: var(--color-btn-primary-border);
+  box-shadow: var(--color-btn-primary-shadow),var(--color-btn-primary-inset-shadow);
+}
     `
     document.head.appendChild(style)
   }
@@ -53,8 +63,8 @@
       const containers = document.createElement('div')
       Object.assign(containers.style, {
         position: 'fixed',
-        right: '20px',
-        bottom: '20px',
+        right: '25px',
+        bottom: '25px',
         zIndex: 999,
         display: 'flex',
         flexDirection: 'column',
@@ -79,8 +89,9 @@
 
         const fab = button.cloneNode(true)
         fab.classList.remove('btn-sm')
+        fab.classList.add('btn-hover-primary')
         fab.style.aspectRatio = '1/1'
-        fab.style.broderRadius = '100%'
+        fab.style.borderRadius = '100%'
         fab.addEventListener('click', clickAndClose)
         containers.appendChild(fab)
 

@@ -34,7 +34,7 @@
   display: none !important;
 }
 .js-notification-shelf {
-  /* display: none !important; */
+  display: none !important;
 }
 .btn-hover-primary {
   transform: scale(1.2);

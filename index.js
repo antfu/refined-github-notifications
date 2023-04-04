@@ -91,20 +91,23 @@
         const clickAndClose = async () => {
           button.click()
           // wait for the notification shelf to be updated
-          await new Promise((resolve) => {
-            new MutationObserver(() => {
-              resolve()
-            })
-              .observe(
-                shelf,
-                {
-                  childList: true,
-                  attributes: true,
-                  subtree: true,
-                  attributeFilter: ['data-redirect-to-inbox-on-submit'],
-                },
-              )
-          })
+          await Promise.race([
+            new Promise((resolve) => {
+              const ob = new MutationObserver((r) => {
+                resolve()
+                ob.disconnect()
+              })
+                .observe(
+                  shelf,
+                  {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                  },
+                )
+            }),
+            new Promise(resolve => setTimeout(resolve, 1000)),
+          ])
           // close the tab
           window.close()
         }

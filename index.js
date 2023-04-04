@@ -177,8 +177,8 @@
       .forEach((r) => {
         if (r.href.startsWith('https://github.com/notifications'))
           return
-        r.target = '_blank'
-        r.rel = 'noopener noreferrer'
+        // try to use the same tab
+        r.target = r.href.replace('https://github.com', '').replace(/[\\/?#-]/g, '_')
       })
   }
 

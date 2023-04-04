@@ -21,6 +21,9 @@
   if (location.pathname === '/notifications/beta/archive')
     location.pathname = '/notifications'
 
+  // list of functions to be cleared on page change
+  const cleanups = []
+
   const NAME = 'Refined GitHub Notifications'
 
   let bc
@@ -70,7 +73,11 @@
         flexDirection: 'column',
         gap: '10px',
       })
+
       document.body.appendChild(containers)
+      cleanups.push(() => {
+        document.body.removeChild(containers)
+      })
 
       const doneButton = shelf.querySelector('button[title="Done"]')
       // const unsubscribeButton = shelf.querySelector('button[title="Unsubscribe"]')
@@ -111,11 +118,15 @@
         containers.appendChild(fab)
 
         if (button === doneButton) {
-          document.addEventListener('keydown', (e) => {
+          const handle = (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'x') {
               e.preventDefault()
               clickAndClose()
             }
+          }
+          document.addEventListener('keydown', handle)
+          cleanups.push(() => {
+            document.removeEventListener('keydown', handle)
           })
         }
       }
@@ -133,6 +144,9 @@
         }
       })
       observer.observe(document.querySelector('[data-turbo-body]'), { childList: true })
+      cleanups.push(() => {
+        observer.disconnect()
+      })
     }
   }
 
@@ -170,7 +184,7 @@
 
   function initIdleListener() {
     // Auto refresh page on going back to the page
-    document.addEventListener('visibilitychange', (e) => {
+    document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible')
         refresh()
     })
@@ -298,6 +312,11 @@
     return !!document.querySelector('.js-updatable-content a[href="/notifications?query="]')
   }
 
+  function cleanup() {
+    cleanups.forEach(fn => fn())
+    cleanups.length = 0
+  }
+
   // Click the notification tab to do soft refresh
   function refresh() {
     if (!isInNotificationPage())
@@ -329,6 +348,7 @@
   let initialized = false
 
   function run() {
+    cleanup()
     if (isInNotificationPage()) {
       // Run only once
       if (!initialized) {

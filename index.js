@@ -158,12 +158,14 @@
     bc = new BroadcastChannel('refined-github-notifications')
 
     bc.onmessage = ({ data }) => {
-      console.log(`[${NAME}]`, 'Received message', data)
-      if (data.type === 'check-dedupe') {
-        // If the new tab is opened after the current tab, close the current tab
-        if (data.time > bcInitTime) {
-          window.close()
-          location.href = 'https://close-me.netlify.app'
+      if (isInNotificationPage()) {
+        console.log(`[${NAME}]`, 'Received message', data)
+        if (data.type === 'check-dedupe') {
+          // If the new tab is opened after the current tab, close the current tab
+          if (data.time > bcInitTime) {
+            window.close()
+            location.href = 'https://close-me.netlify.app'
+          }
         }
       }
     }

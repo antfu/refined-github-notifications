@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Refined GitHub Notifications
 // @namespace    https://greasyfork.org/en/scripts/461320-refined-github-notifications
-// @version      0.2.8
+// @version      0.3.0
 // @description  Enhances the GitHub Notifications page, making it more productive and less noisy.
 // @author       Anthony Fu (https://github.com/antfu)
 // @license      MIT

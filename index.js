@@ -43,6 +43,11 @@
 .mail-status.unread {
   display: none !important;
 }
+/* Hide blue dot on notification with the new navigration */
+.AppHeader .AppHeader-button.AppHeader-button--hasIndicator::before {
+  display: none !important;
+}
+/* Hide the notification shelf and add a FAB */
 .js-notification-shelf {
   display: none !important;
 }

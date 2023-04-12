@@ -1,4 +1,4 @@
-import fs from 'fs/promises'
+import fs from 'node:fs/promises'
 
 const { version } = JSON.parse(await fs.readFile('package.json', 'utf8'))
 const content = await fs.readFile('index.js', 'utf8')

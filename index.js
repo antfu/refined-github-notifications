@@ -61,6 +61,10 @@
   border-color: var(--color-btn-primary-border);
   box-shadow: var(--color-btn-primary-shadow),var(--color-btn-primary-inset-shadow);
 }
+/* Hide the image on zero-inbox */
+.js-notifications-blankslate picture {
+  display: none !important;
+}
     `
     document.head.appendChild(style)
   }
@@ -84,7 +88,7 @@
         // wait for the notification shelf to be updated
         await Promise.race([
           new Promise((resolve) => {
-            const ob = new MutationObserver((r) => {
+            const ob = new MutationObserver(() => {
               resolve()
               ob.disconnect()
             })
@@ -156,7 +160,7 @@
         const buttons = [commentButton, closeButton].filter(Boolean)
 
         for (const button of buttons) {
-          button.addEventListener('click', async (e) => {
+          button.addEventListener('click', async () => {
             if (config[key]) {
               await new Promise(resolve => setTimeout(resolve, 1000))
               clickAndClose()
@@ -191,7 +195,7 @@
 
         const buttons = mergeMessage.querySelectorAll('.js-auto-merge-box button')
         for (const button of buttons) {
-          button.addEventListener('click', async (e) => {
+          button.addEventListener('click', async () => {
             if (config[key]) {
               await new Promise(resolve => setTimeout(resolve, 1000))
               clickAndClose()

@@ -295,12 +295,19 @@
         const notificationType = notificationTypeEl.textContent.trim()
 
         // Colorize notification type
-        if (notificationType === 'mention')
+        if (notificationType === 'mention' || notificationType === 'author')
           notificationTypeEl.classList.add('color-fg-open')
         else if (notificationType === 'subscribed')
+          notificationTypeEl.remove()
+        else if (notificationType === 'state change')
           notificationTypeEl.classList.add('color-fg-muted')
         else if (notificationType === 'review requested')
           notificationTypeEl.classList.add('color-fg-done')
+
+        const plusOneEl = [...el.querySelectorAll('.d-md-flex')]
+          .find(i => i.textContent.trim().startsWith('+'))
+        if (plusOneEl)
+          plusOneEl.remove()
 
         const item = {
           title: el.querySelector('.markdown-title').textContent.trim(),

@@ -65,6 +65,11 @@
 .js-notifications-blankslate picture {
   display: none !important;
 }
+/* Limit notification container width on large screen for better readability */
+.notifications-v2 .js-check-all-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
     `
     document.head.appendChild(style)
   }

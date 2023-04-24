@@ -1,4 +1,4 @@
-# Refined GitHub Notifications
+# Userscript: Refined GitHub Notifications
 
 Enhances the GitHub Notifications page, making it more productive and less noisy.
 

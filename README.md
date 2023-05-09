@@ -20,6 +20,7 @@ Enhances the GitHub Notifications page, making it more productive and less noisy
   - *Notifications you have bookmarked will be bypassed
 - Make sure only one notification tab is opened
 - When going to the issue from the notification, inject a flating button to mark it as done and close the tab.
+- `Alt/Option + X` to mark an notification as done and close it
 
 ## Philosophy
 

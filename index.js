@@ -112,7 +112,7 @@
         window.close()
       }
       const keyDownHandle = (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'x') {
+        if (e.metaKey && e.key === 'x') {
           e.preventDefault()
           clickAndClose()
         }

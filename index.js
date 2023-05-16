@@ -111,8 +111,12 @@
         // close the tab
         window.close()
       }
+
+      /**
+       * @param {MouseEvent} e
+       */
       const keyDownHandle = (e) => {
-        if (e.metaKey && e.key === 'x') {
+        if (e.altKey && e.key === 'x') {
           e.preventDefault()
           clickAndClose()
         }

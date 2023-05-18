@@ -10,7 +10,7 @@ Check [Anthony's Talk](https://youtu.be/gu-0b6KCf80) or the [Transcripts](https:
 
 ## Features
 
-> **Note**: It's opinionated to my own workflow.
+> **Note**: It's pretty opinionated. I'd encourage you to fork and customize it to your own needs.
 
 - Add `target="_blank"` to all notifications (and remove `notification_referrer_id`)
 - Refresh the page when going back to the tab, so you get the latest notifications

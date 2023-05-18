@@ -4,6 +4,10 @@ Enhances the GitHub Notifications page, making it more productive and less noisy
 
 [Install on Greasyfork](https://greasyfork.org/en/scripts/461320-refined-github-notifications)
 
+## Introduction
+
+Check [Anthony's Talk](https://youtu.be/gu-0b6KCf80) or the [Transcripts](https://antfu.me/posts/manage-github-notifcations-2023) to learn more about the philosophy and motivations behind this userscript.
+
 ## Features
 
 > **Note**: It's opinionated to my own workflow.
@@ -13,20 +17,14 @@ Enhances the GitHub Notifications page, making it more productive and less noisy
 - Remove bot avatars
 - Colorize the notification type (mention, review request, etc.)
 - Auto mark notifications as done (remove it from the list), if:
-  - The issue/PR is closed/merged, that you have not participating at all
+  - The issue/PR is closed/merged, and you have not participated at all
   - The issue/PR is closed/merged, and you already read it
   - PRs created by Renovate, if not participating
   - New commits pushed to PRs
   - *Notifications you have bookmarked will be bypassed
 - Make sure only one notification tab is opened
-- When going to the issue from the notification, inject a flating button to mark it as done and close the tab.
-- `Alt/Option + X` to mark an notification as done and close it
-
-## Philosophy
-
-- Reduce the number of notifications as much as possible
-- Don't track issues/PRs that are closed
-- The notifications should always be up to date
+- When going to the issue from the notification, inject a floating button to mark it as done and close the tab.
+- `Alt/Option + X` to mark a notification as done and close it
 
 ## Sponsors
 
@@ -38,4 +36,4 @@ Enhances the GitHub Notifications page, making it more productive and less noisy
 
 ## License
 
-[MIT](./LICENSE) License © 2022 [Anthony Fu](https://github.com/antfu)
+[MIT](./LICENSE) License © 2023 [Anthony Fu](https://github.com/antfu)

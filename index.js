@@ -16,6 +16,7 @@
 // @grant        GM_unregisterMenuCommand
 // ==/UserScript==
 
+// @ts-check
 /* eslint-disable no-console */
 
 (function () {
@@ -25,7 +26,10 @@
   if (location.pathname === '/notifications/beta/archive')
     location.pathname = '/notifications'
 
-  // list of functions to be cleared on page change
+  /**
+   * list of functions to be cleared on page change
+   * @type {(() => void)[]}
+   */
   const cleanups = []
 
   const NAME = 'Refined GitHub Notifications'
@@ -115,6 +119,11 @@
 
   /**
    * Create UI for the options
+   * @template T
+   * @param {string} key
+   * @param {string} title
+   * @param {T} defaultValue
+   * @returns {{ value: T }}
    */
   function useOption(key, title, defaultValue) {
     if (typeof GM_getValue === 'undefined') {
@@ -152,6 +161,7 @@
       if (!shelf)
         return false
 
+      /** @type {HTMLButtonElement} */
       const doneButton = shelf.querySelector('button[title="Done"]')
       if (!doneButton)
         return false
@@ -165,14 +175,15 @@
               resolve()
               ob.disconnect()
             })
-              .observe(
-                shelf,
-                {
-                  childList: true,
-                  subtree: true,
-                  attributes: true,
-                },
-              )
+
+            ob.observe(
+              shelf,
+              {
+                childList: true,
+                subtree: true,
+                attributes: true,
+              },
+            )
           }),
           new Promise(resolve => setTimeout(resolve, 1000)),
         ])
@@ -181,7 +192,7 @@
       }
 
       /**
-       * @param {MouseEvent} e
+       * @param {KeyboardEvent} e
        */
       const keyDownHandle = (e) => {
         if (e.altKey && e.key === 'x') {
@@ -190,6 +201,7 @@
         }
       }
 
+      /** @type {*} */
       const fab = doneButton.cloneNode(true)
       fab.classList.remove('btn-sm')
       fab.classList.add('btn-hover-primary')
@@ -212,6 +224,7 @@
         input.type = 'checkbox'
         input.checked = !!config[key]
         input.addEventListener('change', (e) => {
+          // @ts-expect-error cast
           config[key] = !!e.target.checked
           writeConfig()
         })
@@ -255,6 +268,7 @@
         input.type = 'checkbox'
         input.checked = !!config[key]
         input.addEventListener('change', (e) => {
+          // @ts-expect-error cast
           config[key] = !!e.target.checked
           writeConfig()
         })
@@ -270,7 +284,8 @@
         })
         mergeMessage.prepend(label)
 
-        const buttons = mergeMessage.querySelectorAll('.js-auto-merge-box button')
+        /** @type {HTMLButtonElement[]} */
+        const buttons = Array.from(mergeMessage.querySelectorAll('.js-auto-merge-box button'))
         for (const button of buttons) {
           button.addEventListener('click', async () => {
             if (config[key]) {
@@ -350,8 +365,9 @@
   }
 
   function getIssues() {
-    return [...document.querySelectorAll('.notifications-list-item')]
+    return Array.from(document.querySelectorAll('.notifications-list-item'))
       .map((el) => {
+        /** @type {HTMLLinkElement} */
         const linkEl = el.querySelector('a.notification-list-item-link')
         const url = linkEl.href
         const status = el.querySelector('.color-fg-open')
@@ -364,7 +380,8 @@
                 ? 'muted'
                 : 'unknown'
 
-        const notificationTypeEl = el.querySelector('.AvatarStack').nextElementSibling
+        /** @type {HTMLDivElement | undefined} */
+        const notificationTypeEl = /** @type {*} */ (el.querySelector('.AvatarStack').nextElementSibling)
         if (!notificationTypeEl)
           return null
         const notificationType = notificationTypeEl.textContent.trim()
@@ -386,7 +403,7 @@
           notificationTypeEl.classList.add('color-fg-done')
 
         // Remove plus one
-        const plusOneEl = [...el.querySelectorAll('.d-md-flex')]
+        const plusOneEl = Array.from(el.querySelectorAll('.d-md-flex'))
           .find(i => i.textContent.trim().startsWith('+'))
         if (plusOneEl)
           plusOneEl.remove()
@@ -441,9 +458,10 @@
     return ['is:done', 'is:saved'].every(condition => !conditions.includes(condition))
   }
 
-  function autoMarkDone() {
-    const items = getIssues()
-
+  /**
+   * @param {*} items
+   */
+  function autoMarkDone(items) {
     console.debug(`[${NAME}] ${items.length} notifications found`, items)
     let count = 0
 
@@ -478,11 +496,13 @@
   }
 
   function removeBotAvatars() {
-    document.querySelectorAll('.AvatarStack-body > a')
-      .forEach((r) => {
-        if (r.href.startsWith('/apps/') || r.href.startsWith('https://github.com/apps/'))
-          r.remove()
-      })
+    /** @type {HTMLLinkElement[]} */
+    const avatars = Array.from(document.querySelectorAll('.AvatarStack-body > a'))
+
+    avatars.forEach((r) => {
+      if (r.href.startsWith('/apps/') || r.href.startsWith('https://github.com/apps/'))
+        r.remove()
+    })
   }
 
   /**
@@ -501,7 +521,9 @@
   function refresh() {
     if (!isInNotificationPage())
       return
-    document.querySelector('.filter-list a[href="/notifications"]').click()
+    /** @type {HTMLButtonElement} */
+    const button = document.querySelector('.filter-list a[href="/notifications"]')
+    button.click()
   }
 
   function isInNotificationPage() {

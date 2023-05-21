@@ -751,11 +751,14 @@
     if (detailsCache[item.urlBare]?.bodyHtml)
       return detailsCache[item.urlBare].bodyHtml
 
+    const repoName = subject.repository?.full_name || item.urlBare.split('/').slice(3, 5).join('/')
+
     const bodyHtml = await fetch('https://api.github.com/markdown', {
       method: 'POST',
       body: JSON.stringify({
         text: subject.body,
-        context: subject.repository?.full_name,
+        mode: 'gfm',
+        context: repoName,
       }),
       headers: {
         'Content-Type': 'application/vnd.github+json',

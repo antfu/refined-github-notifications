@@ -718,6 +718,9 @@
       .replace('https://github.com', 'https://api.github.com/repos')
       .replace('/pull/', '/pulls/')
 
+    if (!apiUrl.includes('/issues/') && !apiUrl.includes('/pulls/'))
+      return
+
     try {
       /** @type {Subject} */
       const data = await fetch(apiUrl, {

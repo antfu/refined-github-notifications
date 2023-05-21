@@ -444,7 +444,7 @@
   function autoMarkDone() {
     const items = getIssues()
 
-    console.log(`[${NAME}] ${items}`)
+    console.debug(`[${NAME}] ${items.length} notifications found`, items)
     let count = 0
 
     const done = []

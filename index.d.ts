@@ -4,4 +4,16 @@ declare global {
   function GM_registerMenuCommand(name: string, func: () => void): void;
 }
 
+export interface NotificationItem {
+  title: string;
+  el: HTMLElement
+  url: string
+  read: boolean,
+  starred: boolean,
+  type: string, 
+  status: string,
+  isClosed: boolean,
+  markDone: () => void
+}
+
 export {}

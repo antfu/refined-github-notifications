@@ -19,6 +19,10 @@
 // @ts-check
 /* eslint-disable no-console */
 
+/**
+ * @typedef {import('./index.d').NotificationItem} Item
+ */
+
 (function () {
   'use strict'
 
@@ -155,7 +159,7 @@
    * To have a FAB button to close current issue,
    * where you can mark done and then close the tab automatically
    */
-  function notificationShelf() {
+  function enhanceNotificationShelf() {
     function inject() {
       const shelf = document.querySelector('.js-notification-shelf')
       if (!shelf)
@@ -309,7 +313,9 @@
     // when first into the page, the notification shelf might not be loaded, we need to wait for it to show
     if (!inject()) {
       const observer = new MutationObserver((mutationList) => {
-        const found = mutationList.some(i => i.type === 'childList' && Array.from(i.addedNodes).some(el => el.classList.contains('js-notification-shelf')))
+        /** @type {HTMLElement[]} */
+        const addedNodes = /** @type {*} */ (Array.from(mutationList[0].addedNodes))
+        const found = mutationList.some(i => i.type === 'childList' && addedNodes.some(el => el.classList.contains('js-notification-shelf')))
         if (found) {
           inject()
           observer.disconnect()
@@ -365,74 +371,75 @@
   }
 
   function getIssues() {
-    return Array.from(document.querySelectorAll('.notifications-list-item'))
-      .map((el) => {
-        /** @type {HTMLLinkElement} */
-        const linkEl = el.querySelector('a.notification-list-item-link')
-        const url = linkEl.href
-        const status = el.querySelector('.color-fg-open')
-          ? 'open'
-          : el.querySelector('.color-fg-done')
-            ? 'done'
-            : el.querySelector('.color-fg-closed')
-              ? 'closed'
-              : el.querySelector('.color-fg-muted')
-                ? 'muted'
-                : 'unknown'
+    /** @type {HTMLDivElement[]} */
+    const items = Array.from(document.querySelectorAll('.notifications-list-item'))
+    return items.map((el) => {
+      /** @type {HTMLLinkElement} */
+      const linkEl = el.querySelector('a.notification-list-item-link')
+      const url = linkEl.href
+      const status = el.querySelector('.color-fg-open')
+        ? 'open'
+        : el.querySelector('.color-fg-done')
+          ? 'done'
+          : el.querySelector('.color-fg-closed')
+            ? 'closed'
+            : el.querySelector('.color-fg-muted')
+              ? 'muted'
+              : 'unknown'
 
-        /** @type {HTMLDivElement | undefined} */
-        const notificationTypeEl = /** @type {*} */ (el.querySelector('.AvatarStack').nextElementSibling)
-        if (!notificationTypeEl)
-          return null
-        const notificationType = notificationTypeEl.textContent.trim()
+      /** @type {HTMLDivElement | undefined} */
+      const notificationTypeEl = /** @type {*} */ (el.querySelector('.AvatarStack').nextElementSibling)
+      if (!notificationTypeEl)
+        return null
+      const notificationType = notificationTypeEl.textContent.trim()
 
-        // Colorize notification type
-        if (notificationType === 'mention')
-          notificationTypeEl.classList.add('color-fg-open')
-        else if (notificationType === 'author')
-          notificationTypeEl.style.color = 'var(--color-scale-green-5)'
-        else if (notificationType === 'ci activity')
-          notificationTypeEl.classList.add('color-fg-muted')
-        else if (notificationType === 'commented')
-          notificationTypeEl.style.color = 'var(--color-scale-blue-4)'
-        else if (notificationType === 'subscribed')
-          notificationTypeEl.remove()
-        else if (notificationType === 'state change')
-          notificationTypeEl.classList.add('color-fg-muted')
-        else if (notificationType === 'review requested')
-          notificationTypeEl.classList.add('color-fg-done')
+      // Colorize notification type
+      if (notificationType === 'mention')
+        notificationTypeEl.classList.add('color-fg-open')
+      else if (notificationType === 'author')
+        notificationTypeEl.style.color = 'var(--color-scale-green-5)'
+      else if (notificationType === 'ci activity')
+        notificationTypeEl.classList.add('color-fg-muted')
+      else if (notificationType === 'commented')
+        notificationTypeEl.style.color = 'var(--color-scale-blue-4)'
+      else if (notificationType === 'subscribed')
+        notificationTypeEl.remove()
+      else if (notificationType === 'state change')
+        notificationTypeEl.classList.add('color-fg-muted')
+      else if (notificationType === 'review requested')
+        notificationTypeEl.classList.add('color-fg-done')
 
-        // Remove plus one
-        const plusOneEl = Array.from(el.querySelectorAll('.d-md-flex'))
-          .find(i => i.textContent.trim().startsWith('+'))
-        if (plusOneEl)
-          plusOneEl.remove()
+      // Remove plus one
+      const plusOneEl = Array.from(el.querySelectorAll('.d-md-flex'))
+        .find(i => i.textContent.trim().startsWith('+'))
+      if (plusOneEl)
+        plusOneEl.remove()
 
-        // Remove issue number
-        if (HIDE_ISSUE_NUMBER.value) {
-          const issueNo = linkEl.children[1]?.children?.[0]?.querySelector('.color-fg-muted')
-          if (issueNo && issueNo.textContent.trim().startsWith('#'))
-            issueNo.remove()
-        }
+      // Remove issue number
+      if (HIDE_ISSUE_NUMBER.value) {
+        const issueNo = linkEl.children[1]?.children?.[0]?.querySelector('.color-fg-muted')
+        if (issueNo && issueNo.textContent.trim().startsWith('#'))
+          issueNo.remove()
+      }
 
-        const item = {
-          title: el.querySelector('.markdown-title').textContent.trim(),
-          el,
-          url,
-          read: el.classList.contains('notification-read'),
-          starred: el.classList.contains('notification-starred'),
-          type: notificationType,
-          status,
-          isClosed: ['closed', 'done', 'muted'].includes(status),
-          markDone: () => {
-            console.log(`[${NAME}]`, 'Mark notifications done', item)
-            el.querySelector('button[type=submit] .octicon-check').parentElement.parentElement.click()
-          },
-        }
+      /** @type {Item} */
+      const item = {
+        title: el.querySelector('.markdown-title').textContent.trim(),
+        el,
+        url,
+        read: el.classList.contains('notification-read'),
+        starred: el.classList.contains('notification-starred'),
+        type: notificationType,
+        status,
+        isClosed: ['closed', 'done', 'muted'].includes(status),
+        markDone: () => {
+          console.log(`[${NAME}]`, 'Mark notifications done', item)
+          el.querySelector('button[type=submit] .octicon-check').parentElement.parentElement.click()
+        },
+      }
 
-        return item
-      })
-      .filter(Boolean)
+      return item
+    }).filter(Boolean)
   }
 
   function getReasonMarkedDone(item) {
@@ -459,7 +466,7 @@
   }
 
   /**
-   * @param {*} items
+   * @param {Item[]} items
    */
   function autoMarkDone(items) {
     console.debug(`[${NAME}] ${items.length} notifications found`, items)
@@ -481,7 +488,7 @@
       done.push({
         title: i.title,
         reason,
-        link: i.link,
+        url: i.url,
       })
     })
 
@@ -530,7 +537,7 @@
     return location.href.startsWith('https://github.com/notifications')
   }
 
-  function observeForNewNotifications() {
+  function initNewNotificationsObserver() {
     try {
       const observer = new MutationObserver(() => {
         if (hasNewNotifications())
@@ -556,7 +563,7 @@
       if (!initialized) {
         initIdleListener()
         initBroadcastChannel()
-        observeForNewNotifications()
+        initNewNotificationsObserver()
         initialized = true
       }
 
@@ -573,7 +580,7 @@
     }
     else {
       if (ENHANCE_NOTIFICATION_SHELF.value)
-        notificationShelf()
+        enhanceNotificationShelf()
     }
   }
 

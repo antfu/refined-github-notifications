@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.5.0",
   "private": true,
-  "packageManager": "pnpm@8.1.1",
+  "packageManager": "pnpm@8.5.1",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",
   "license": "MIT",
   "funding": "https://github.com/sponsors/antfu",
@@ -18,20 +18,20 @@
     "release": "bumpp -x \"node bump.js\" --all"
   },
   "devDependencies": {
-    "@antfu/eslint-config": "^0.38.4",
-    "@antfu/ni": "^0.21.2",
+    "@antfu/eslint-config": "^0.39.1",
+    "@antfu/ni": "^0.21.3",
     "@antfu/utils": "^0.7.2",
-    "@types/node": "^18.15.11",
+    "@types/node": "^18.16.13",
     "bumpp": "^9.1.0",
-    "eslint": "^8.37.0",
+    "eslint": "^8.41.0",
     "esno": "^0.16.3",
-    "lint-staged": "^13.2.0",
-    "pnpm": "^8.1.1",
-    "rimraf": "^4.4.1",
+    "lint-staged": "^13.2.2",
+    "pnpm": "^8.5.1",
+    "rimraf": "^5.0.1",
     "simple-git-hooks": "^2.8.1",
-    "typescript": "^5.0.3",
-    "unbuild": "^1.2.0",
-    "vite": "^4.2.1"
+    "typescript": "^5.0.4",
+    "unbuild": "^1.2.1",
+    "vite": "^4.3.8"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm lint-staged"

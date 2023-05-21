@@ -21,6 +21,8 @@
 
 /**
  * @typedef {import('./index.d').NotificationItem} Item
+ * @typedef {import('./index.d').Subject} Subject
+ * @typedef {import('./index.d').DetailsCache} DetailsCache
  */
 
 (function () {
@@ -38,17 +40,37 @@
 
   const NAME = 'Refined GitHub Notifications'
   const STORAGE_KEY = 'refined-github-notifications'
+  const STORAGE_KEY_DETAILS = 'refined-github-notifications:details-cache'
+  const DETAILS_CACHE_TIMEOUT = 1000 * 60 * 60 * 6 // 6 hours
 
   const AUTO_MARK_DONE = useOption('rgn_auto_mark_done', 'Auto mark done', true)
   const HIDE_CHECKBOX = useOption('rgn_hide_checkbox', 'Hide checkbox', true)
   const HIDE_ISSUE_NUMBER = useOption('rgn_hide_issue_number', 'Hide issue number', true)
   const HIDE_EMPTY_INBOX_IMAGE = useOption('rgn_hide_empty_inbox_image', 'Hide empty inbox image', true)
   const ENHANCE_NOTIFICATION_SHELF = useOption('rgn_enhance_notification_shelf', 'Enhance notification shelf', true)
+  const SHOW_DEATAILS = useOption('rgn_show_details', 'Detail Preview', false)
+
+  const GITHUB_TOKEN = localStorage.getItem('github_token') || ''
 
   const config = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+  /**
+   * @type {Record<string, DetailsCache>}
+   */
+  const detailsCache = JSON.parse(localStorage.getItem(STORAGE_KEY_DETAILS) || '{}')
 
   let bc
   let bcInitTime = 0
+
+  const reactionsMap = {
+    '+1': '👍',
+    '-1': '👎',
+    'laugh': '😄',
+    'hooray': '🎉',
+    'confused': '😕',
+    'heart': '❤️',
+    'rocket': '🚀',
+    'eyes': '👀',
+  }
 
   function writeConfig() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
@@ -393,40 +415,12 @@
         return null
       const notificationType = notificationTypeEl.textContent.trim()
 
-      // Colorize notification type
-      if (notificationType === 'mention')
-        notificationTypeEl.classList.add('color-fg-open')
-      else if (notificationType === 'author')
-        notificationTypeEl.style.color = 'var(--color-scale-green-5)'
-      else if (notificationType === 'ci activity')
-        notificationTypeEl.classList.add('color-fg-muted')
-      else if (notificationType === 'commented')
-        notificationTypeEl.style.color = 'var(--color-scale-blue-4)'
-      else if (notificationType === 'subscribed')
-        notificationTypeEl.remove()
-      else if (notificationType === 'state change')
-        notificationTypeEl.classList.add('color-fg-muted')
-      else if (notificationType === 'review requested')
-        notificationTypeEl.classList.add('color-fg-done')
-
-      // Remove plus one
-      const plusOneEl = Array.from(el.querySelectorAll('.d-md-flex'))
-        .find(i => i.textContent.trim().startsWith('+'))
-      if (plusOneEl)
-        plusOneEl.remove()
-
-      // Remove issue number
-      if (HIDE_ISSUE_NUMBER.value) {
-        const issueNo = linkEl.children[1]?.children?.[0]?.querySelector('.color-fg-muted')
-        if (issueNo && issueNo.textContent.trim().startsWith('#'))
-          issueNo.remove()
-      }
-
       /** @type {Item} */
       const item = {
         title: el.querySelector('.markdown-title').textContent.trim(),
         el,
         url,
+        urlBare: url.replace(/[#?].*$/, ''),
         read: el.classList.contains('notification-read'),
         starred: el.classList.contains('notification-starred'),
         type: notificationType,
@@ -437,6 +431,49 @@
           el.querySelector('button[type=submit] .octicon-check').parentElement.parentElement.click()
         },
       }
+
+      if (!el.classList.contains('enhanced-notification')) {
+        // Colorize notification type
+        if (notificationType === 'mention')
+          notificationTypeEl.classList.add('color-fg-open')
+        else if (notificationType === 'author')
+          notificationTypeEl.style.color = 'var(--color-scale-green-5)'
+        else if (notificationType === 'ci activity')
+          notificationTypeEl.classList.add('color-fg-muted')
+        else if (notificationType === 'commented')
+          notificationTypeEl.style.color = 'var(--color-scale-blue-4)'
+        else if (notificationType === 'subscribed')
+          notificationTypeEl.remove()
+        else if (notificationType === 'state change')
+          notificationTypeEl.classList.add('color-fg-muted')
+        else if (notificationType === 'review requested')
+          notificationTypeEl.classList.add('color-fg-done')
+
+        // Remove plus one
+        const plusOneEl = Array.from(el.querySelectorAll('.d-md-flex'))
+          .find(i => i.textContent.trim().startsWith('+'))
+        if (plusOneEl)
+          plusOneEl.remove()
+
+        // Remove issue number
+        if (HIDE_ISSUE_NUMBER.value) {
+          const issueNo = linkEl.children[1]?.children?.[0]?.querySelector('.color-fg-muted')
+          if (issueNo && issueNo.textContent.trim().startsWith('#'))
+            issueNo.remove()
+        }
+
+        if (SHOW_DEATAILS.value) {
+          fetchDetail(item)
+            .then((r) => {
+              if (r) {
+                registerReactions(item, r)
+                registerPopup(item, r)
+              }
+            })
+        }
+      }
+
+      el.classList.add('enhanced-notification')
 
       return item
     }).filter(Boolean)
@@ -465,11 +502,128 @@
     return ['is:done', 'is:saved'].every(condition => !conditions.includes(condition))
   }
 
+  function purgeCache() {
+    const now = Date.now()
+    Object.entries(detailsCache).forEach(([key, value]) => {
+      if (now - value.lastUpdated > DETAILS_CACHE_TIMEOUT)
+        delete detailsCache[key]
+    })
+  }
+
+  /**
+   * Add reactions count when there are more than 3 reactions
+   *
+   * @param {Item} item
+   * @param {Subject} subject
+   */
+  function registerReactions(item, subject) {
+    if ('reactions' in subject && subject.reactions) {
+      const reactions = Object.entries(subject.reactions)
+        .map(([k, v]) => ({ emoji: k, count: +v }))
+        .filter(i => i.count >= 3 && i.emoji !== 'total_count')
+      if (reactions.length) {
+        const reactionsEl = document.createElement('div')
+        reactionsEl.classList.add('Label')
+        reactionsEl.classList.add('color-fg-muted')
+        reactionsEl.append(
+          ...reactions.map((i) => {
+            const el = document.createElement('span')
+            el.textContent = `${reactionsMap[i.emoji]} ${i.count}`
+            return el
+          }),
+        )
+        const avatarStack = item.el.querySelector('.AvatarStack')
+        avatarStack.parentElement.insertBefore(reactionsEl, avatarStack.nextElementSibling)
+      }
+    }
+  }
+
+  /** @type {HTMLElement | undefined} */
+  let currentPopup
+  /** @type {Item | undefined} */
+  let currentItem
+
+  /**
+   * @param {Item} item
+   * @param {Subject} subject
+   */
+  function registerPopup(item, subject) {
+    /** @type {HTMLDivElement | undefined} */
+    let popupEl
+    /** @type {HTMLDivElement} */
+    const titleEl = item.el.querySelector('.markdown-title')
+
+    async function initPopup() {
+      const bodyHtml = await renderBody(item, subject)
+
+      popupEl = document.createElement('div')
+      popupEl.className = 'Popover js-hovercard-content position-absolute'
+
+      const bodyBoxEl = document.createElement('div')
+      bodyBoxEl.className = 'Popover-message Popover-message--large Box color-shadow-large Popover-message--top-right'
+      // @ts-expect-error assign
+      bodyBoxEl.style = 'overflow: auto; width: 500px; max-height: 500px;'
+
+      const contentEl = document.createElement('div')
+      contentEl.className = 'comment-body markdown-body js-comment-body'
+      contentEl.innerHTML = bodyHtml
+      // @ts-expect-error assign
+      contentEl.style = 'padding: 1rem 1rem; transform-origin: left top;'
+
+      bodyBoxEl.append(contentEl)
+      popupEl.append(bodyBoxEl)
+
+      popupEl.addEventListener('mouseenter', () => {
+        popupShow()
+      })
+
+      popupEl.addEventListener('mouseleave', () => {
+        if (currentPopup === popupEl)
+          removeCurrent()
+      })
+
+      return popupEl
+    }
+
+    /** @type {Promise<HTMLDivElement>} */
+    let _promise
+
+    async function popupShow() {
+      currentItem = item
+      _promise = _promise || initPopup()
+      await _promise
+      removeCurrent()
+
+      const box = titleEl.getBoundingClientRect()
+      // @ts-expect-error assign
+      popupEl.style = `display: block; outline: none; top: ${box.top + box.height + 5}px; left: ${box.left - 10}px; z-index: 100;`
+      document.body.append(popupEl)
+      currentPopup = popupEl
+    }
+
+    function removeCurrent() {
+      if (currentPopup && Array.from(document.body.children).includes(currentPopup))
+        document.body.removeChild(currentPopup)
+    }
+
+    titleEl.addEventListener('mouseenter', popupShow)
+    titleEl.addEventListener('mouseleave', () => {
+      if (currentItem === item)
+        currentItem = undefined
+
+      setTimeout(() => {
+        if (!currentItem)
+          removeCurrent()
+      }, 500)
+    })
+  }
+
   /**
    * @param {Item[]} items
    */
   function autoMarkDone(items) {
-    console.debug(`[${NAME}] ${items.length} notifications found`, items)
+    console.info(`[${NAME}] ${items.length} notifications found`)
+    console.table(items)
     let count = 0
 
     const done = []
@@ -552,6 +706,69 @@
     }
   }
 
+  /**
+   * @param {Item} item
+   */
+  async function fetchDetail(item) {
+    if (detailsCache[item.urlBare]?.subject)
+      return detailsCache[item.urlBare].subject
+
+    console.log(`[${NAME}]`, 'Fetching issue details', item)
+    const apiUrl = item.urlBare
+      .replace('https://github.com', 'https://api.github.com/repos')
+      .replace('/pull/', '/pulls/')
+
+    try {
+      /** @type {Subject} */
+      const data = await fetch(apiUrl, {
+        headers: {
+          'Content-Type': 'application/vnd.github+json',
+          'Authorization': GITHUB_TOKEN ? `Bearer ${GITHUB_TOKEN}` : undefined,
+        },
+      }).then(r => r.json())
+      detailsCache[item.urlBare] = {
+        url: item.urlBare,
+        lastUpdated: Date.now(),
+        subject: data,
+      }
+      localStorage.setItem(STORAGE_KEY_DETAILS, JSON.stringify(detailsCache))
+
+      return data
+    }
+    catch (e) {
+      console.error(`[${NAME}]`, `Failed to fetch issue details of ${item.urlBare}`, e)
+    }
+  }
+
+  /**
+   * @param {Item} item
+   * @param {Subject} subject
+   */
+  async function renderBody(item, subject) {
+    if (detailsCache[item.urlBare]?.bodyHtml)
+      return detailsCache[item.urlBare].bodyHtml
+
+    const bodyHtml = await fetch('https://api.github.com/markdown', {
+      method: 'POST',
+      body: JSON.stringify({
+        text: subject.body,
+        context: subject.repository?.full_name,
+      }),
+      headers: {
+        'Content-Type': 'application/vnd.github+json',
+        'Authorization': GITHUB_TOKEN ? `Bearer ${GITHUB_TOKEN}` : undefined,
+      },
+    }).then(r => r.text())
+
+    if (detailsCache[item.urlBare]) {
+      detailsCache[item.urlBare].bodyHtml = bodyHtml
+
+      localStorage.setItem(STORAGE_KEY_DETAILS, JSON.stringify(detailsCache))
+    }
+
+    return bodyHtml
+  }
+
   ////////////////////////////////////////
 
   let initialized = false
@@ -585,6 +802,7 @@
   }
 
   injectStyle()
+  purgeCache()
   run()
 
   // listen to github page loaded event

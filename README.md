@@ -25,6 +25,15 @@ Check [Anthony's Talk](https://youtu.be/gu-0b6KCf80) or the [Transcripts](https:
 - Make sure only one notification tab is opened
 - When going to the issue from the notification, inject a floating button to mark it as done and close the tab.
 - `Alt/Option + X` to mark a notification as done and close it
+- Preview issue body when hovering over the title
+
+## GitHub Token
+
+When using "Detail Preview" feature, GitHub token would be better to provide to avoid rate limit. You can set the token by running the following command in the console of any page on GitHub:
+
+```ts
+localStorage.setItem('github_token', 'your token')
+```
 
 ## Sponsors
 

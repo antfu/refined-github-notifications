@@ -1,3 +1,10 @@
 {
-  "extends": "@antfu"
+  "extends": "@antfu",
+  "globals": {
+    "GM_getValue": "readonly",
+    "GM_setValue": "readonly",
+    "GM_addValueChangeListener": "readonly",
+    "GM_removeValueChangeListener": "readonly",
+    "GM_registerMenuCommand": "readonly"
+  }
 }

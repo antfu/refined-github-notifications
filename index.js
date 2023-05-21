@@ -10,6 +10,10 @@
 // @match        https://github.com/**
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=github.com
 // @grant        window.close
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_registerMenuCommand
+// @grant        GM_unregisterMenuCommand
 // ==/UserScript==
 
 /* eslint-disable no-console */
@@ -27,6 +31,12 @@
   const NAME = 'Refined GitHub Notifications'
   const STORAGE_KEY = 'refined-github-notifications'
 
+  const AUTO_MARK_DONE = useOption('rgn_auto_mark_done', 'Auto mark done', true)
+  const HIDE_CHECKBOX = useOption('rgn_hide_checkbox', 'Hide checkbox', true)
+  const HIDE_ISSUE_NUMBER = useOption('rgn_hide_issue_number', 'Hide issue number', true)
+  const HIDE_EMPTY_INBOX_IMAGE = useOption('rgn_hide_empty_inbox_image', 'Hide empty inbox image', true)
+  const ENHANCE_NOTIFICATION_SHELF = useOption('rgn_enhance_notification_shelf', 'Enhance notification shelf', true)
+
   const config = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
 
   let bc
@@ -38,7 +48,7 @@
 
   function injectStyle() {
     const style = document.createElement('style')
-    style.innerHTML = `
+    style.innerHTML = [`
 /* Hide blue dot on notification icon */
 .mail-status.unread {
   display: none !important;
@@ -47,6 +57,40 @@
 .AppHeader .AppHeader-button.AppHeader-button--hasIndicator::before {
   display: none !important;
 }
+/* Limit notification container width on large screen for better readability */
+.notifications-v2 .js-check-all-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+/* Hide sidebar earlier, override the breakpoints */
+@media (min-width: 768px) {
+  .js-notifications-container {
+    flex-direction: column !important;
+  }
+  .js-notifications-container > .d-none.d-md-flex {
+    display: none !important;
+  }
+  .js-notifications-container > .col-md-9 {
+    width: 100% !important;
+  }
+}
+@media (min-width: 1268px) {
+  .js-notifications-container {
+    flex-direction: row !important;
+  }
+  .js-notifications-container > .d-none.d-md-flex {
+    display: flex !important;
+  }
+}
+`,
+    HIDE_CHECKBOX.value && `
+/* Hide check box on notification list */
+.notifications-list-item > *:first-child label {
+  opacity: 0 !important;
+  width: 0 !important;
+  margin-right: -10px !important;
+}`,
+    ENHANCE_NOTIFICATION_SHELF.value && `
 /* Hide the notification shelf and add a FAB */
 .js-notification-shelf {
   display: none !important;
@@ -60,18 +104,42 @@
   background-color: var(--color-btn-primary-bg);
   border-color: var(--color-btn-primary-border);
   box-shadow: var(--color-btn-primary-shadow),var(--color-btn-primary-inset-shadow);
-}
-/* Hide the image on zero-inbox */
+}`,
+    HIDE_EMPTY_INBOX_IMAGE.value && `/* Hide the image on zero-inbox */
 .js-notifications-blankslate picture {
   display: none !important;
-}
-/* Limit notification container width on large screen for better readability */
-.notifications-v2 .js-check-all-container {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-    `
+}`,
+    ].filter(Boolean).join('\n')
     document.head.appendChild(style)
+  }
+
+  /**
+   * Create UI for the options
+   */
+  function useOption(key, title, defaultValue) {
+    if (typeof GM_getValue === 'undefined') {
+      return {
+        value: defaultValue,
+      }
+    }
+
+    let value = GM_getValue(key, defaultValue)
+    const ref = {
+      get value() {
+        return value
+      },
+      set value(v) {
+        value = v
+        GM_setValue(key, v)
+        location.reload()
+      },
+    }
+
+    GM_registerMenuCommand(`${title}: ${value ? '✅' : '❌'}`, () => {
+      ref.value = !value
+    })
+
+    return ref
   }
 
   /**
@@ -284,7 +352,8 @@
   function getIssues() {
     return [...document.querySelectorAll('.notifications-list-item')]
       .map((el) => {
-        const url = el.querySelector('a.notification-list-item-link').href
+        const linkEl = el.querySelector('a.notification-list-item-link')
+        const url = linkEl.href
         const status = el.querySelector('.color-fg-open')
           ? 'open'
           : el.querySelector('.color-fg-done')
@@ -296,11 +365,19 @@
                 : 'unknown'
 
         const notificationTypeEl = el.querySelector('.AvatarStack').nextElementSibling
+        if (!notificationTypeEl)
+          return null
         const notificationType = notificationTypeEl.textContent.trim()
 
         // Colorize notification type
-        if (notificationType === 'mention' || notificationType === 'author')
+        if (notificationType === 'mention')
           notificationTypeEl.classList.add('color-fg-open')
+        else if (notificationType === 'author')
+          notificationTypeEl.style.color = 'var(--color-scale-green-5)'
+        else if (notificationType === 'ci activity')
+          notificationTypeEl.classList.add('color-fg-muted')
+        else if (notificationType === 'commented')
+          notificationTypeEl.style.color = 'var(--color-scale-blue-4)'
         else if (notificationType === 'subscribed')
           notificationTypeEl.remove()
         else if (notificationType === 'state change')
@@ -308,10 +385,18 @@
         else if (notificationType === 'review requested')
           notificationTypeEl.classList.add('color-fg-done')
 
+        // Remove plus one
         const plusOneEl = [...el.querySelectorAll('.d-md-flex')]
           .find(i => i.textContent.trim().startsWith('+'))
         if (plusOneEl)
           plusOneEl.remove()
+
+        // Remove issue number
+        if (HIDE_ISSUE_NUMBER.value) {
+          const issueNo = linkEl.children[1]?.children?.[0]?.querySelector('.color-fg-muted')
+          if (issueNo && issueNo.textContent.trim().startsWith('#'))
+            issueNo.remove()
+        }
 
         const item = {
           title: el.querySelector('.markdown-title').textContent.trim(),
@@ -330,6 +415,7 @@
 
         return item
       })
+      .filter(Boolean)
   }
 
   function getReasonMarkedDone(item) {
@@ -356,10 +442,6 @@
   }
 
   function autoMarkDone() {
-    // Only mark on "Inbox" view
-    if (!isInboxView())
-      return
-
     const items = getIssues()
 
     console.log(`[${NAME}] ${items}`)
@@ -456,14 +538,20 @@
         initialized = true
       }
 
+      const items = getIssues()
+
       // Run every render
       dedupeTab()
       externalize()
       removeBotAvatars()
-      autoMarkDone()
+
+      // Only mark on "Inbox" view
+      if (isInboxView() && AUTO_MARK_DONE.value)
+        autoMarkDone(items)
     }
     else {
-      notificationShelf()
+      if (ENHANCE_NOTIFICATION_SHELF.value)
+        notificationShelf()
     }
   }
 

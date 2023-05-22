@@ -548,9 +548,12 @@
    * @param {Subject} subject
    */
   function registerPopup(item, subject) {
-    /** @type {HTMLDivElement | undefined} */
+    if (!subject.body)
+      return
+
+    /** @type {HTMLElement | undefined} */
     let popupEl
-    /** @type {HTMLDivElement} */
+    /** @type {HTMLElement} */
     const titleEl = item.el.querySelector('.markdown-title')
 
     async function initPopup() {
@@ -561,14 +564,42 @@
 
       const bodyBoxEl = document.createElement('div')
       bodyBoxEl.className = 'Popover-message Popover-message--large Box color-shadow-large Popover-message--top-right'
+
       // @ts-expect-error assign
-      bodyBoxEl.style = 'overflow: auto; width: 500px; max-height: 500px;'
+      bodyBoxEl.style = 'overflow: auto; width: 800px; max-height: 500px;'
 
       const contentEl = document.createElement('div')
       contentEl.className = 'comment-body markdown-body js-comment-body'
+
       contentEl.innerHTML = bodyHtml
       // @ts-expect-error assign
       contentEl.style = 'padding: 1rem 1rem; transform-origin: left top;'
+
+      if (subject.user) {
+        const userAvatar = document.createElement('a')
+        userAvatar.className = 'author text-bold Link--primary'
+        userAvatar.style.display = 'flex'
+        userAvatar.style.alignItems = 'center'
+        userAvatar.style.gap = '0.4em'
+        userAvatar.href = subject.user?.html_url
+        userAvatar.innerHTML = `
+          <img alt="@${subject.user?.login}" class="avatar avatar-user" height="18" src="${subject.user?.avatar_url}" width="18">
+          <span>${subject.user.login}</span>
+        `
+        const time = document.createElement('relative-time')
+        // @ts-expect-error custom element
+        time.datetime = subject.created_at
+        time.className = 'color-fg-muted'
+        time.style.marginLeft = '0.4em'
+        const p = document.createElement('p')
+        p.style.display = 'flex'
+        p.style.alignItems = 'center'
+        p.style.gap = '0.25em'
+        p.append(userAvatar)
+        p.append(time)
+
+        contentEl.prepend(p)
+      }
 
       bodyBoxEl.append(contentEl)
       popupEl.append(bodyBoxEl)
@@ -596,7 +627,7 @@
 
       const box = titleEl.getBoundingClientRect()
       // @ts-expect-error assign
-      popupEl.style = `display: block; outline: none; top: ${box.top + box.height + 5}px; left: ${box.left - 10}px; z-index: 100;`
+      popupEl.style = `display: block; outline: none; top: ${box.top + box.height + window.scrollY + 5}px; left: ${box.left - 10}px; z-index: 100;`
       document.body.append(popupEl)
       currentPopup = popupEl
     }
@@ -748,6 +779,8 @@
    * @param {Subject} subject
    */
   async function renderBody(item, subject) {
+    if (!subject.body)
+      return
     if (detailsCache[item.urlBare]?.bodyHtml)
       return detailsCache[item.urlBare].bodyHtml
 

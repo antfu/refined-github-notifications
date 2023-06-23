@@ -525,6 +525,12 @@
         const reactionsEl = document.createElement('div')
         reactionsEl.classList.add('Label')
         reactionsEl.classList.add('color-fg-muted')
+        Object.assign(reactionsEl.style, {
+          display: 'flex',
+          gap: '0.4em',
+          alignItems: 'center',
+          marginRight: '-1.5em',
+        })
         reactionsEl.append(
           ...reactions.map((i) => {
             const el = document.createElement('span')

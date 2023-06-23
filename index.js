@@ -188,7 +188,7 @@
         return false
 
       /** @type {HTMLButtonElement} */
-      const doneButton = shelf.querySelector('button[title="Done"]')
+      const doneButton = shelf.querySelector('button[aria-label="Done"]')
       if (!doneButton)
         return false
 
@@ -622,7 +622,7 @@
       return popupEl
     }
 
-    /** @type {Promise<HTMLDivElement>} */
+    /** @type {Promise<HTMLElement>} */
     let _promise
 
     async function popupShow() {

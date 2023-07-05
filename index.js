@@ -49,6 +49,7 @@
   const HIDE_EMPTY_INBOX_IMAGE = useOption('rgn_hide_empty_inbox_image', 'Hide empty inbox image', true)
   const ENHANCE_NOTIFICATION_SHELF = useOption('rgn_enhance_notification_shelf', 'Enhance notification shelf', true)
   const SHOW_DEATAILS = useOption('rgn_show_details', 'Detail Preview', false)
+  const SHOW_REACTIONS = useOption('rgn_show_reactions', 'Reactions Preview', false)
 
   const GITHUB_TOKEN = localStorage.getItem('github_token') || ''
 
@@ -462,12 +463,14 @@
             issueNo.remove()
         }
 
-        if (SHOW_DEATAILS.value) {
+        if (SHOW_DEATAILS.value || SHOW_REACTIONS.value) {
           fetchDetail(item)
             .then((r) => {
               if (r) {
-                registerReactions(item, r)
-                registerPopup(item, r)
+                if (SHOW_REACTIONS.value)
+                  registerReactions(item, r)
+                if (SHOW_DEATAILS.value)
+                  registerPopup(item, r)
               }
             })
         }

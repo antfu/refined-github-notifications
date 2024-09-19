@@ -724,6 +724,7 @@
       return
     /** @type {HTMLButtonElement} */
     const button = document.querySelector('.filter-list a[href="/notifications"]')
+      ?? document.querySelector('.AppHeader-context a[href="/notifications"]')
     button.click()
   }
 

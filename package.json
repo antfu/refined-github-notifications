@@ -1,7 +1,7 @@
 {
   "name": "refined-github-notifications",
   "type": "module",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "private": true,
   "packageManager": "pnpm@9.10.0",
   "author": "Anthony Fu <anthonyfu117@hotmail.com>",

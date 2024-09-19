@@ -79,7 +79,8 @@
 
   function injectStyle() {
     const style = document.createElement('style')
-    style.innerHTML = [`
+    style.innerHTML = [
+      `
 /* Hide blue dot on notification icon */
 .mail-status.unread {
   display: none !important;
@@ -114,14 +115,14 @@
   }
 }
 `,
-    HIDE_CHECKBOX.value && `
+      HIDE_CHECKBOX.value && `
 /* Hide check box on notification list */
 .notifications-list-item > *:first-child label {
   opacity: 0 !important;
   width: 0 !important;
   margin-right: -10px !important;
 }`,
-    ENHANCE_NOTIFICATION_SHELF.value && `
+      ENHANCE_NOTIFICATION_SHELF.value && `
 /* Hide the notification shelf and add a FAB */
 .js-notification-shelf {
   display: none !important;
@@ -136,11 +137,13 @@
   border-color: var(--color-btn-primary-border);
   box-shadow: var(--color-btn-primary-shadow),var(--color-btn-primary-inset-shadow);
 }`,
-    HIDE_EMPTY_INBOX_IMAGE.value && `/* Hide the image on zero-inbox */
+      HIDE_EMPTY_INBOX_IMAGE.value && `/* Hide the image on zero-inbox */
 .js-notifications-blankslate picture {
   display: none !important;
 }`,
-    ].filter(Boolean).join('\n')
+    ]
+      .filter(Boolean)
+      .join('\n')
     document.head.appendChild(style)
   }
 
@@ -150,7 +153,7 @@
    * @param {string} key
    * @param {string} title
    * @param {T} defaultValue
-   * @returns {{ value: T }}
+   * @returns {{ value: T }} return
    */
   function useOption(key, title, defaultValue) {
     if (typeof GM_getValue === 'undefined') {
@@ -743,7 +746,7 @@
         subtree: true,
       })
     }
-    catch (e) {
+    catch {
     }
   }
 

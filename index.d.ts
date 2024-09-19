@@ -1,21 +1,21 @@
-import { RestEndpointMethodTypes } from '@octokit/rest'
+import type { RestEndpointMethodTypes } from '@octokit/rest'
 
 declare global {
-  function GM_setValue(key: string, v: any): void;
-  function GM_getValue(key: string, def: any): any;
-  function GM_registerMenuCommand(name: string, func: () => void): void;
+  function GM_setValue(key: string, v: any): void
+  function GM_getValue(key: string, def: any): any
+  function GM_registerMenuCommand(name: string, func: () => void): void
 }
 
 export interface NotificationItem {
-  title: string;
+  title: string
   el: HTMLElement
   url: string
   urlBare: string
-  read: boolean,
-  starred: boolean,
-  type: string, 
-  status: string,
-  isClosed: boolean,
+  read: boolean
+  starred: boolean
+  type: string
+  status: string
+  isClosed: boolean
   markDone: () => void
   popupShow?: () => void
   popupHide?: () => void
@@ -32,6 +32,5 @@ export interface DetailsCache {
   subject: Subject
   bodyHtml?: string
 }
-
 
 export {}

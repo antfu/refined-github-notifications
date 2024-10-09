@@ -6,7 +6,7 @@ Enhances the GitHub Notifications page, making it more productive and less noisy
 
 ## Introduction
 
-Check [Anthony's Talk](https://youtu.be/gu-0b6KCf80) or the [Transcripts](https://antfu.me/posts/manage-github-notifcations-2023) to learn more about the philosophy and motivations behind this userscript.
+Check [Anthony's Talk](https://youtu.be/gu-0b6KCf80) or the [Transcripts](https://antfu.me/posts/manage-github-notifications-2023) to learn more about the philosophy and motivations behind this userscript.
 
 ## Features
 

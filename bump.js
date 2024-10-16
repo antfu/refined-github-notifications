@@ -1,3 +1,4 @@
+/* eslint-disable antfu/no-top-level-await */
 import fs from 'node:fs/promises'
 
 const { version } = JSON.parse(await fs.readFile('package.json', 'utf8'))

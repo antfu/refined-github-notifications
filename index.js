@@ -489,8 +489,8 @@
     if (item.isClosed && (item.read || item.type === 'subscribed'))
       return 'Closed / merged'
 
-    if (item.title.startsWith('chore(deps): update ') && (item.read || item.type === 'subscribed'))
-      return 'Renovate bot'
+    if (/(?:chore|build)\((?:deps|deps-dev)\): (?:update|bump)/.test(item.title) && (item.read || item.type === 'subscribed'))
+      return 'Renovate bot | Dependabot'
 
     if (item.url.match('/pull/[0-9]+/files/'))
       return 'New commit pushed to PR'

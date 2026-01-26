@@ -89,6 +89,9 @@
 .AppHeader .AppHeader-button.AppHeader-button--hasIndicator::before {
   display: none !important;
 }
+.styles-module__notificationIndicator--Xi7hr:before {
+  display: none !important;
+}
 /* Limit notification container width on large screen for better readability */
 .notifications-v2 .js-check-all-container {
   max-width: 1000px;

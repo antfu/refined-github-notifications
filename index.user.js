@@ -20,9 +20,9 @@
 /* eslint-disable no-console */
 
 /**
- * @typedef {import('./index.d').NotificationItem} Item
- * @typedef {import('./index.d').Subject} Subject
- * @typedef {import('./index.d').DetailsCache} DetailsCache
+ * @typedef {import('./index.user').NotificationItem} Item
+ * @typedef {import('./index.user').Subject} Subject
+ * @typedef {import('./index.user').DetailsCache} DetailsCache
  */
 
 (function () {

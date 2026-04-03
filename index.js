@@ -422,6 +422,9 @@
         return null
       const notificationType = notificationTypeEl.textContent.trim()
 
+      const timeEl = el.querySelector('relative-time')
+      const timestamp = timeEl ? new Date(timeEl.getAttribute('datetime')).getTime() : undefined
+
       /** @type {Item} */
       const item = {
         title: el.querySelector('.markdown-title').textContent.trim(),
@@ -433,6 +436,7 @@
         type: notificationType,
         status,
         isClosed: ['closed', 'done', 'muted'].includes(status),
+        timestamp,
         markDone: () => {
           console.log(`[${NAME}]`, 'Mark notifications done', item)
           el.querySelector('button[type=submit] .octicon-check').parentElement.parentElement.click()
@@ -492,7 +496,7 @@
     if (item.isClosed && (item.read || item.type === 'subscribed'))
       return 'Closed / merged'
 
-    if (/(?:chore|build)\((?:deps|deps-dev)\): (?:update|bump)/.test(item.title) && (item.read || item.type === 'subscribed'))
+    if (/(?:chore|build)\((?:deps|deps-dev)\): (?:update|bump)/.test(item.title))
       return 'Renovate bot | Dependabot'
 
     if (item.url.match('/pull/[0-9]+/files/'))
@@ -500,6 +504,12 @@
 
     if (item.type === 'ci activity' && /workflow run cancell?ed/.test(item.title))
       return 'GH PR Audit Action workflow run cancelled, probably due to another run taking precedence'
+
+    if (item.timestamp && (item.type === 'review requested' || item.type === 'ci activity')) {
+      const twoDays = 1000 * 60 * 60 * 24 * 2
+      if (Date.now() - item.timestamp > twoDays)
+        return `Stale ${item.type} (older than 2 days)`
+    }
   }
 
   function isInboxView() {

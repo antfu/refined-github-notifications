@@ -16,6 +16,7 @@ export interface NotificationItem {
   type: string
   status: string
   isClosed: boolean
+  timestamp: number | undefined
   markDone: () => void
   popupShow?: () => void
   popupHide?: () => void
